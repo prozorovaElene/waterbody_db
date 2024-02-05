@@ -1,0 +1,135 @@
+-- --------------------------------------------------------
+-- Host:                         127.0.0.1
+-- Server version:               11.1.2-MariaDB - mariadb.org binary distribution
+-- Server OS:                    Win64
+-- HeidiSQL Version:             12.3.0.6589
+-- --------------------------------------------------------
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+
+-- Dumping database structure for waterbody
+CREATE DATABASE IF NOT EXISTS `waterbody` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */;
+USE `waterbody`;
+
+-- Dumping structure for table waterbody.finances
+CREATE TABLE IF NOT EXISTS `finances` (
+  `orgID` int(10) unsigned NOT NULL,
+  `projectID` int(10) unsigned NOT NULL,
+  `amount` decimal(10,0) DEFAULT NULL,
+  PRIMARY KEY (`orgID`,`projectID`),
+  KEY `projectID` (`projectID`),
+  CONSTRAINT `finances_ibfk_1` FOREIGN KEY (`orgID`) REFERENCES `organization` (`orgID`),
+  CONSTRAINT `finances_ibfk_2` FOREIGN KEY (`projectID`) REFERENCES `project` (`projectID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table waterbody.organization
+CREATE TABLE IF NOT EXISTS `organization` (
+  `orgID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `orgName` varchar(80) NOT NULL,
+  PRIMARY KEY (`orgID`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table waterbody.project
+CREATE TABLE IF NOT EXISTS `project` (
+  `projectID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `projectTitle` varchar(150) NOT NULL,
+  `totalCost` decimal(12,0) NOT NULL,
+  `startDate` date DEFAULT NULL,
+  `endDate` date DEFAULT NULL,
+  PRIMARY KEY (`projectID`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table waterbody.researcher
+CREATE TABLE IF NOT EXISTS `researcher` (
+  `rEmail` varchar(80) NOT NULL,
+  `rName` varchar(80) NOT NULL,
+  `orgID` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`rEmail`),
+  KEY `Index 2` (`orgID`),
+  CONSTRAINT `FK_researcher_organization` FOREIGN KEY (`orgID`) REFERENCES `organization` (`orgID`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table waterbody.runningwater
+CREATE TABLE IF NOT EXISTS `runningwater` (
+  `waterID` int(10) unsigned NOT NULL,
+  `waterName` varchar(50) NOT NULL,
+  `quality` tinyint(4) DEFAULT NULL,
+  `length` int(10) unsigned DEFAULT NULL,
+  `flowsInto` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`waterID`),
+  KEY `flowsInto` (`flowsInto`),
+  CONSTRAINT `runningwater_ibfk_1` FOREIGN KEY (`flowsInto`) REFERENCES `runningwater` (`waterID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table waterbody.rw_research
+CREATE TABLE IF NOT EXISTS `rw_research` (
+  `projectID` int(10) unsigned NOT NULL,
+  `waterID` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`projectID`,`waterID`),
+  KEY `waterID` (`waterID`),
+  CONSTRAINT `rw_research_ibfk_1` FOREIGN KEY (`projectID`) REFERENCES `project` (`projectID`) ON UPDATE CASCADE,
+  CONSTRAINT `rw_research_ibfk_2` FOREIGN KEY (`waterID`) REFERENCES `runningwater` (`waterID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table waterbody.standingwater
+CREATE TABLE IF NOT EXISTS `standingwater` (
+  `waterID` int(10) unsigned NOT NULL,
+  `waterName` varchar(50) NOT NULL,
+  `quality` tinyint(4) DEFAULT NULL,
+  `surface` int(11) DEFAULT NULL,
+  PRIMARY KEY (`waterID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table waterbody.sw_research
+CREATE TABLE IF NOT EXISTS `sw_research` (
+  `projectID` int(10) unsigned NOT NULL,
+  `waterID` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`projectID`,`waterID`),
+  KEY `waterID` (`waterID`),
+  CONSTRAINT `sw_research_ibfk_1` FOREIGN KEY (`projectID`) REFERENCES `project` (`projectID`) ON UPDATE CASCADE,
+  CONSTRAINT `sw_research_ibfk_2` FOREIGN KEY (`waterID`) REFERENCES `standingwater` (`waterID`) ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table waterbody.workson
+CREATE TABLE IF NOT EXISTS `workson` (
+  `rEmail` varchar(80) NOT NULL,
+  `projectID` int(10) unsigned NOT NULL,
+  `function` tinytext DEFAULT NULL,
+  `weeklyHours` tinyint(3) unsigned NOT NULL,
+  PRIMARY KEY (`rEmail`,`projectID`),
+  KEY `projectID` (`projectID`),
+  CONSTRAINT `workson_ibfk_1` FOREIGN KEY (`rEmail`) REFERENCES `researcher` (`rEmail`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `workson_ibfk_2` FOREIGN KEY (`projectID`) REFERENCES `project` (`projectID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+-- Data exporting was unselected.
+
+/*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
+/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
+/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
